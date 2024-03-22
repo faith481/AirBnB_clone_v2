@@ -1,56 +1,53 @@
 #!/usr/bin/python3
-"""Compress web static package
 """
-from fabric.api import *
+Module for web application deployment using Fabric
+"""
+from os.path import exists, basename
 from datetime import datetime
-from os import path
+from fabric.api import *
+
+env.hosts = ["100.25.199.90", "52.3.242.186"]
+env.user = "ubuntu"
+env.key_filename = "~/.ssh/school"
 
 
-env.hosts = ['100.25.19.204', '54.157.159.85']
-env.user = 'ubuntu'
-env.key_filename = '~/.ssh/id_rsa'
+def do_pack():
+    """Creates an archive of the static files"""
+    if not os.path.exists("versions"):
+        os.mkdir("versions")
+    currdt = datetime.utcnow()
+    result = f"versions/web_static_{currdt.strftime('%Y%m%d%H%M%S')}.tgz"
+    try:
+        print(f"Packing web_static to {result}")
+        local(f"tar -cvzf {result} web_static")
+        file_size = os.path.getsize(result)
+        print(f"web_static packed: {result} -> {file_size} Bytes")
+    except Exception as e:
+        print(f"Error: {e}")
+        result = None
+    return result
 
 
+@task(default=True)
 def do_deploy(archive_path):
-            """Deploy web files to server
-                    """
-                            try:
-                                                if not (path.exists(archive_path)):
-                                                                            return False
-
-                                                                                        # upload archive
-                                                                                                        put(archive_path, '/tmp/')
-
-                                                                                                                        # create target dir
-                                                                                                                                        timestamp = archive_path[-18:-4]
-                                                                                                                                                        run('sudo mkdir -p /data/web_static/\
-                                                                                                                                                                releases/web_static_{}/'.format(timestamp))
-
-                                                                                                                                                                        # uncompress archive and delete .tgz
-                                                                                                                                                                                        run('sudo tar -xzf /tmp/web_static_{}.tgz -C \
-                                                                                                                                                                                                /data/web_static/releases/web_static_{}/'
-                                                                                                                                                                                                                    .format(timestamp, timestamp))
-
-                                                                                                                                                                                                        # remove archive
-                                                                                                                                                                                                                        run('sudo rm /tmp/web_static_{}.tgz'.format(timestamp))
-
-                                                                                                                                                                                                                                        # move contents into host web_static
-                                                                                                                                                                                                                                                        run('sudo mv /data/web_static/releases/web_static_{}/web_static/* \
-                                                                                                                                                                                                                                                                /data/web_static/releases/web_static_{}/'.format(timestamp, timestamp))
-
-                                                                                                                                                                                                                                                                        # remove extraneous web_static dir
-                                                                                                                                                                                                                                                                                        run('sudo rm -rf /data/web_static/releases/\
-                                                                                                                                                                                                                                                                                                web_static_{}/web_static'
-                                                                                                                                                                                                                                                                                                                    .format(timestamp))
-
-                                                                                                                                                                                                                                                                                                        # delete pre-existing sym link
-                                                                                                                                                                                                                                                                                                                        run('sudo rm -rf /data/web_static/current')
-
-                                                                                                                                                                                                                                                                                                                                        # re-establish symbolic link
-                                                                                                                                                                                                                                                                                                                                                        run('sudo ln -s /data/web_static/releases/\
-                                                                                                                                                                                                                                                                                                                                                                web_static_{}/ /data/web_static/current'.format(timestamp))
-                                                                                                                                                                                                                                                                                                                                                                except:
-                                                                                                                                                                                                                                                                                                                                                                                    return False
-
-                                                                                                                                                                                                                                                                                                                                                                                        # return True on success
-                                                                                                                                                                                                                                                                                                                                                                                                return True
+    """Distributes archives to the web servers
+    Args:
+    archive_path: the path to the static files"""
+    if not exists(archive_path):
+        return False
+    try:
+        put(archive_path, "/tmp/")
+        flname = basename(archive_path)
+        flnamext = flname.split(".")[0]
+        fldpath = f"/data/web_static/releases/{flnamext}/"
+        sudo(f"mkdir -p {fldpath}")
+        sudo(f"tar -xzf /tmp/{flname} -C {fldpath}")
+        sudo(f"rsync -a {fldpath}web_static/* {fldpath}")
+        sudo(f"rm -rf {fldpath}web_static")
+        sudo(f"rm -rf /tmp/{flname}")
+        sudo(f"rm -rf /data/web_static/current")
+        sudo(f"ln -sf {fldpath} /data/web_static/current")
+        print("New version deployed!")
+        return True
+    except Exception:
+        return False                                                                                                                                                                                                                                                                                                                                                                                                return True
