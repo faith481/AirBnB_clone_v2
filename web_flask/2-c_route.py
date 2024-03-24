@@ -1,24 +1,30 @@
 #!/usr/bin/python3
-"""A script that starts a flask web application"""
+""" Write a script that starts a Flask web application:
+    Your web application must be listening on 0.0.0.0, port 5000
+    """
 
 from flask import Flask
-app = Flask(__name__)
+
+app = Flask("__name__")
 
 
-@app.route("/")
+@app.route('/', strict_slashes=False)
 def hello():
-        return "Hello HBNB!"
+    """Return a given string"""
+    return ("Hello HBNB!")
 
 
-@app.route("/hbnb")
+@app.route("/hbnb", strict_slashes=False)
 def hbnb():
-        return "HBNB"
+"""Returns a given string"""
+    return ("HBNB")
 
-@app.route("/c/<text>")
-def c_page(text):
-        """display C followed by the value of the text variable"""
-        text = text.replace("_", " ")
-        return f"C {text}"
 
-if __name__ == '__main__':
-                app.run(host="0.0.0.0", port=5000, debug=True)
+@app.route("/c/<text>", strict_slashes=False)
+def cText(text):
+"""display C followed by the value of the text variable"""
+    return "C {}".format(text.replace("_", " "))
+
+
+if __name__ == "__main__":
+app.run(host="0.0.0.0", port=5000, debug=None)
