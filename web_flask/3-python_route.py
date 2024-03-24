@@ -26,9 +26,9 @@ def cText(text):
     return "C {}".format(text.replace("_", " "))
 
 
-@app.route('/python')
 @app.route("/python/<text>")
-def pythonText(text="is cool"):
+@app.route("/python", defaults={"text": "is cool"})
+def python_page(text):
 """display Python followed by the value of the text variable"""
     return "Python {}".format(text.replace("_", " "))
 
