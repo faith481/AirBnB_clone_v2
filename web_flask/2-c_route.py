@@ -1,28 +1,23 @@
 #!/usr/bin/python3
 """Script that starts a Flask web application"""
+
+
 from flask import Flask
-
-
 app = Flask(__name__)
-"""Flask application instance is defined"""
-app.url_map.strict_slashes = False
 
 
-@app.route("/")
-def home():
-        """The home page message"""
+@app.route("/", strict_slashes=False)
+def hello():
     return "Hello HBNB!"
 
 
 @app.route("/hbnb")
-def hbnb_page():
-                """The HBNB page message"""
+def hbnb():
     return "HBNB"
 
 
 @app.route("/c/<text>")
 def c_page(text):
-                        """The C page message displayed by the value of <text>"""
     text = text.replace("_", " ")
     return f"C {text}"
 
@@ -30,9 +25,8 @@ def c_page(text):
 @app.route("/python/<text>")
 @app.route("/python", defaults={"text": "is cool"})
 def python_page(text):
-                                    """The Python page displayed by the value of <text>"""
-text = text.replace("_", " ")
-return f"Python {text}"
+    text = text.replace("_", " ")
+    return f"Python {text}"
 
 
 if __name__ == "__main__":
