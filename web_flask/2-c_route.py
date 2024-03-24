@@ -1,30 +1,39 @@
 #!/usr/bin/python3
-""" Write a script that starts a Flask web application:
-    Your web application must be listening on 0.0.0.0, port 5000
-    """
-
+"""Script that starts a Flask web application"""
 from flask import Flask
 
-app = Flask("__name__")
+
+app = Flask(__name__)
+"""Flask application instance is defined"""
+app.url_map.strict_slashes = False
 
 
-@app.route('/', strict_slashes=False)
-def hello():
-    """Return a given string"""
-    return ("Hello HBNB!")
+@app.route("/")
+def home():
+        """The home page message"""
+            return "Hello HBNB!"
 
 
-@app.route("/hbnb", strict_slashes=False)
-def hbnb():
-"""Returns a given string"""
-    return ("HBNB")
+        @app.route("/hbnb")
+        def hbnb_page():
+                """The HBNB page message"""
+                    return "HBNB"
 
 
-@app.route("/c/<text>", strict_slashes=False)
-def cText(text):
-"""display C followed by the value of the text variable"""
-    return "C {}".format(text.replace("_", " "))
+                @app.route("/c/<text>")
+                def c_page(text):
+                        """The C page message displayed by the value of <text>"""
+                            text = text.replace("_", " ")
+                                return f"C {text}"
 
 
-if __name__ == "__main__":
-app.run(host="0.0.0.0", port=5000, debug=None)
+                            @app.route("/python/<text>")
+                            @app.route("/python", defaults={"text": "is cool"})
+                            def python_page(text):
+                                    """The Python page displayed by the value of <text>"""
+                                        text = text.replace("_", " ")
+                                            return f"Python {text}"
+
+
+                                        if __name__ == "__main__":
+                                                app.run(host="0.0.0.0", port=5000)
