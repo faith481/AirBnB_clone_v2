@@ -15,7 +15,7 @@ def hbnb():
         return "HBNB"
 
 @app.route("/c/<text>")
-def cText(text):
+def c_page(text):
         """display C followed by the value of the text variable"""
         text = text.replace("_", " ")
         return f"C {text}"
